@@ -1,8 +1,11 @@
 #!/usr/bin/groovy
 import io.fabric8.Fabric8Commands
+import io.fabric8.Utils
 
 def call(Map parameters = [:], body) {
     def flow = new Fabric8Commands()
+    def utils = new Utils()
+
     def defaultLabel = buildId('go')
     def label = parameters.get('label', defaultLabel)
 
@@ -11,8 +14,9 @@ def call(Map parameters = [:], body) {
     def inheritFrom = parameters.get('inheritFrom', 'base')
     def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:v54e55b7' : 'jenkinsci/jnlp-slave:2.62'
 
-    def utils = new io.fabric8.Utils()
-    podTemplate(label: label, serviceAccount: 'jenkins', inheritFrom: "${inheritFrom}",
+    def cloud = flow.getCloudConfig()
+
+    podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins',
             containers: [
                     containerTemplate(
                             name: 'go',
