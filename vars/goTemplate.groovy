@@ -33,8 +33,7 @@ def call(Map parameters = [:], body) {
                             envVars: [
                                     envVar(key: 'GOPATH', value: '/home/jenkins/go')
                             ],
-                            resourceLimitMemory: '640Mi'))
-            ],
+                            resourceLimitMemory: '640Mi')],
             volumes:
                     [secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
                      secretVolume(secretName: 'jenkins-ssh-config', mountPath: '/root/.ssh-ro'),
