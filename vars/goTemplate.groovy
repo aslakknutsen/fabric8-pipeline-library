@@ -10,14 +10,19 @@ def call(Map parameters = [:], body) {
     def label = parameters.get('label', defaultLabel)
 
     def goImage = parameters.get('goImage', 'fabric8/go-builder:1.8.1.2')
-    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:vb0268ae' : 'jenkinsci/jnlp-slave:2.62'
-    def clientsImage = parameters.get('clientsImage', 'fabric8/builder-clients:v703b6d9')
+    def jnlpImage = (flow.isOpenShift()) ? 'fabric8/jenkins-slave-base-centos7:v54e55b7' : 'jenkinsci/jnlp-slave:2.62'
     def inheritFrom = parameters.get('inheritFrom', 'base')
 
     def cloud = flow.getCloudConfig()
 
     podTemplate(cloud: cloud, label: label, inheritFrom: "${inheritFrom}", serviceAccount: 'jenkins',
             containers: [
+                    containerTemplate(
+                            name: 'jnlp',
+                            image: "${jnlpImage}",
+                            args: '${computer.jnlpmac} ${computer.name}',
+                            workingDir: '/home/jenkins/',
+                            resourceLimitMemory: '256Mi'),
                     containerTemplate(
                             name: 'go',
                             image: "${goImage}",
@@ -27,7 +32,8 @@ def call(Map parameters = [:], body) {
                             workingDir: '/home/jenkins/',
                             envVars: [
                                     envVar(key: 'GOPATH', value: '/home/jenkins/go')
-                            ]),
+                            ],
+                            resourceLimitMemory: '640Mi'))
             ],
             volumes:
                     [secretVolume(secretName: 'jenkins-hub-api-token', mountPath: '/home/jenkins/.apitoken'),
